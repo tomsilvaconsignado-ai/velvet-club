@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Velvet Club - Arquitetura, Layout do Usuário e Painel Admin</title>
+
+  <!-- Chosen Palette: Dark Obsidian & Velvet (Background: #07060A, Surface: #121019, Elevated: #1B1726, Accents: #E5094C Ruby, #7928CA Electric Purple, #FFB800 Gold) -->
+  
+  <!-- Application Structure Plan:
+       Designed as an interactive Architecture Specification, End-User Interface Suite & Full Administrative Command Center:
+       1. Header & Navigation: Quick access to User Layout Showcase, System Architecture, Biometric Security, Match Simulator, Admin Command Panel, Seed Database, and PostgreSQL DDL.
+       2. USER LAYOUT SHOWCASE (Layout do Usuário):
+          - Mobile Phone Frame Emulator & Desktop Full Screen Layout Switcher.
+          - Tab Bar navigation inside User App: Descoberta (Swipe/Grid Feed), Chats & Matches, Perfil & Cofre Privado, Notificações, Configurações de Discrição.
+          - Dynamic state updates for likes, instant messaging, vault unlocks, profile edit preview, and privacy mode toggles.
+       3. ARCHITECTURE & SECURITY: Zero-Trust topology, H3 Hexagonal location jittering, legal disclosures, and interactive 3D Biometric Liveness simulator.
+       4. MATCH ENGINE SIMULATOR: Real-time slider weights with Radar Chart compatibility visualization.
+       5. ADMIN COMMAND PANEL: Live report investigation modal with encrypted photo inspection, user ban/suspension controls, and immutable audit logging.
+       6. SEED PROFILE EXPLORER: Searchable 100 demo accounts.
+       7. DATABASE SCHEMA: PostgreSQL DDL viewer. -->
+
+  <!-- Visualization & Content Choices:
+       - Layout do Usuário: Interactive HTML5 phone frame with tabbed navigation, dynamic message rendering, ephemeral photo gallery, and settings toggles.
+       - Architecture Diagram: Styled Tailwind Grid/Flex cards with unicode flow icons (NO SVG/Mermaid).
+       - Latency & Moderation Data: Chart.js Bar and Doughnut charts.
+       - Match Score: Interactive Chart.js Radar chart.
+       - Biometric Simulator: Step-by-step JS animation state.
+       - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+  <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#07060A',
+            surface: '#121019',
+            elevated: '#1B1726',
+            ruby: '#E5094C',
+            'ruby-hover': '#C0073E',
+            purple: '#7928CA',
+            gold: '#FFB800',
+            muted: '#9E9AA8',
+            subtle: '#5C5768'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #07060A;
+      color: #F8F7FA;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    .glass-panel {
+      background: rgba(18, 16, 25, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(121, 40, 202, 0.25);
+    }
+
+    .glow-ruby {
+      box-shadow: 0 0 20px rgba(229, 9, 76, 0.35);
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      height: 300px;
+      max-height: 380px;
+    }
+
+    @media (min-width: 768px) {
+      .chart-container {
+        height: 350px;
+      }
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #07060A;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1B1726;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #7928CA;
+    }
+
+    .watermarked-media {
+      position: relative;
+      overflow: hidden;
+    }
+    .watermarked-media::after {
+      content: "PROTECTED • VELVET CLUB • USER #7729";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.22);
+      font-size: 11px;
+      font-weight: bold;
+      transform: rotate(-30deg);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .phone-screen {
+      width: 100%;
+      max-width: 380px;
+      height: 720px;
+      border-radius: 40px;
+      border: 10px solid #221D30;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(121, 40, 202, 0.2);
+      position: relative;
+      overflow: hidden;
+      background: #07060A;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-obsidian text-slate-100 flex flex-col selection:bg-ruby selection:text-white">
+
+  <!-- TOP HEADER / NAVBAR -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-purple/20 px-4 py-3">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-ruby to-purple flex items-center justify-center font-black text-xl shadow-lg glow-ruby">
+          V
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-bold text-lg tracking-wide text-white">VELVET CLUB</h1>
+            <span class="bg-ruby/20 text-ruby text-xs px-2 py-0.5 rounded-full border border-ruby/30 font-medium">Privacy First</span>
+            <span class="bg-purple/20 text-purple text-xs px-2 py-0.5 rounded-full border border-purple/30 font-medium">v1.3 Client & Admin</span>
+          </div>
+          <p class="text-xs text-muted">Rede Social Adulta & Casais • Interface do Usuário, Arquitetura e Moderação</p>
+        </div>
+      </div>
+
+      <!-- MAIN NAVIGATION TABS -->
+      <nav class="flex items-center gap-1 bg-surface p-1 rounded-xl border border-subtle/30 overflow-x-auto max-w-full">
+        <button onclick="switchTab('user-layout')" id="tab-user-layout" class="px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all bg-gradient-to-r from-ruby to-purple text-white shadow glow-ruby flex items-center gap-1.5">
+          <span>📱</span> Layout do Usuário
+        </button>
+        <button onclick="switchTab('arch')" id="tab-arch" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-muted hover:text-white transition-all">
+          🏛️ Arquitetura
+        </button>
+        <button onclick="switchTab('security')" id="tab-security" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-muted hover:text-white transition-all">
+          🛡️ Segurança & Anti-Fake
+        </button>
+        <button onclick="switchTab('match')" id="tab-match" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-muted hover:text-white transition-all">
+          🧠 Algoritmo Match
+        </button>
+        <button onclick="switchTab('admin')" id="tab-admin" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gold hover:text-white transition-all border border-gold/30 bg-gold/10">
+          🛠️ Painel Admin
+        </button>
+        <button onclick="switchTab('seed')" id="tab-seed" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-muted hover:text-white transition-all">
+          👥 100 Perfis Demo
+        </button>
+        <button onclick="switchTab('schema')" id="tab-schema" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-muted hover:text-white transition-all">
+          🗄️ PostgreSQL DDL
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-8">
+
+    <!-- TAB 1: LAYOUT DO USUÁRIO (CLIENT SUITE) -->
+    <section id="view-user-layout" class="space-y-6">
+      
+      <div class="bg-gradient-to-r from-surface via-elevated to-surface p-6 rounded-2xl border border-ruby/30 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 text-ruby font-bold text-xs uppercase tracking-wider mb-1">
+            <span>✨ EXPERIÊNCIA DO CLIENTE • APP MOBILE & WEB DESK</span>
+          </div>
+          <h2 class="text-2xl md:text-3xl font-extrabold text-white">Layout Completo do Usuário no Velvet Club</h2>
+          <p class="text-muted text-sm max-w-3xl">
+            Explore abaixo a interface do membro do Velvet Club. Você pode alternar entre as abas do app (Descoberta, Chats, Perfil & Cofre Privado, Notificações e Configurações de Discrição) e interagir em tempo real com todos os módulos.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2 bg-obsidian p-1 rounded-xl border border-subtle/30">
+          <button onclick="setUserDisplayMode('mobile')" id="btn-mode-mobile" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-ruby text-white shadow">
+            📱 Modo Smartphone
+          </button>
+          <button onclick="setUserDisplayMode('desktop')" id="btn-mode-desktop" class="px-3 py-1.5 rounded-lg text-xs font-bold text-muted hover:text-white">
+            💻 Modo Desktop Grid
+          </button>
+        </div>
+      </div>
+
+      <div id="user-display-wrapper" class="flex justify-center items-start transition-all">
+        
+        <!-- MOBILE PHONE FRAME MOCKUP -->
+        <div id="phone-container" class="phone-screen flex flex-col justify-between">
+          
+          <!-- TOP STATUS BAR -->
+          <div class="bg-obsidian/90 px-5 pt-3 pb-2 flex justify-between items-center text-[10px] text-muted border-b border-subtle/20 select-none z-20">
+            <span class="font-bold text-white">21:42</span>
+            <div class="flex items-center gap-1.5">
+              <span class="text-emerald-400 font-mono">5G</span>
+              <span class="text-ruby font-bold">🔒 VPN Active</span>
+              <span>100% 🔋</span>
+            </div>
+          </div>
+
+          <!-- APP HEADER INSIDE PHONE -->
+          <div class="bg-surface/95 px-4 py-2.5 border-b border-purple/20 flex justify-between items-center z-20 backdrop-blur">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-ruby to-purple flex items-center justify-center font-black text-xs text-white">
+                V
+              </div>
+              <span class="font-black text-sm tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-ruby to-purple">VELVET</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button onclick="switchUserSubTab('notifications')" class="relative p-1 text-xs text-muted hover:text-white">
+                🔔 <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-ruby animate-ping"></span>
+              </button>
+              <button onclick="toggleGhostMode()" id="ghost-toggle-badge" class="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-emerald-500/30">
+                👻 On-line
+              </button>
+            </div>
+          </div>
+
+          <!-- SCREEN BODY CONTENT -->
+          <div class="flex-1 overflow-y-auto bg-obsidian relative p-3">
+            
+            <!-- SUB-TAB 1: DESCOBERTA (SWIPE & RADAR) -->
+            <div id="u-screen-discovery" class="space-y-3">
+              
+              <div class="flex items-center justify-between text-xs bg-surface p-2 rounded-xl border border-subtle/20">
+                <div class="flex items-center gap-1">
+                  <button onclick="setDiscoveryViewMode('swipe')" id="u-disc-swipe-btn" class="bg-purple text-white text-[10px] px-2.5 py-1 rounded-lg font-bold">
+                    🎴 Swipe
+                  </button>
+                  <button onclick="setDiscoveryViewMode('grid')" id="u-disc-grid-btn" class="text-muted hover:text-white text-[10px] px-2.5 py-1 rounded-lg font-semibold">
+                    🌐 Grid Radar
+                  </button>
+                </div>
+                <span class="text-ruby text-[10px] font-bold bg-ruby/10 px-2 py-1 rounded-lg border border-ruby/20">
+                  ⚙️ Raio 12km
+                </span>
+              </div>
+
+              <!-- SWIPE CARD STACK -->
+              <div id="u-swipe-card-view" class="space-y-3">
+                <div id="u-card-box" class="bg-surface rounded-2xl overflow-hidden border border-purple/30 shadow-2xl relative transition-all duration-300">
+                  
+                  <div class="relative h-72 w-full bg-elevated">
+                    <img id="u-card-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-obsidian via-transparent to-transparent"></div>
+                    
+                    <div class="absolute top-3 left-3 flex flex-wrap gap-1">
+                      <span class="bg-gold text-black text-[9px] font-black px-2 py-0.5 rounded-full shadow">
+                        🛡️ VERIFICADO 3D
+                      </span>
+                      <span class="bg-purple/80 text-white text-[9px] font-bold px-2 py-0.5 rounded-full backdrop-blur">
+                        👨‍❤️‍👨 Casal Liberal
+                      </span>
+                    </div>
+
+                    <div class="absolute bottom-3 left-3 right-3 space-y-1">
+                      <h3 id="u-card-name" class="text-lg font-extrabold text-white">Marcos & Juliana, 31 & 29</h3>
+                      <p id="u-card-geo" class="text-[11px] text-slate-200 flex items-center gap-1">
+                        📍 São Paulo, SP • <span class="text-ruby font-bold">~6 km de você</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="p-3 space-y-2 bg-surface">
+                    <p id="u-card-bio" class="text-[11px] text-muted line-clamp-2">
+                      Casal mente aberta em busca de uma conexão autêntica e leve. Curtimos bons jantares, conversas sem pressa e discrição mútua.
+                    </p>
+                    <div class="flex flex-wrap gap-1">
+                      <span class="bg-elevated text-purple text-[9px] px-2 py-0.5 rounded border border-purple/20">🍷 Vinho</span>
+                      <span class="bg-elevated text-purple text-[9px] px-2 py-0.5 rounded border border-purple/20">🍽️ Gastronomia</span>
+                      <span class="bg-elevated text-purple text-[9px] px-2 py-0.5 rounded border border-purple/20">🔒 Sigilo Total</span>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="flex items-center justify-evenly pt-1">
+                  <button onclick="handleUserSwipe('pass')" class="w-12 h-12 rounded-full bg-surface border-2 border-subtle/40 text-muted hover:text-ruby flex items-center justify-center text-lg active:scale-90 transition-all shadow">
+                    ✖️
+                  </button>
+                  <button onclick="handleUserSwipe('superlike')" class="w-10 h-10 rounded-full bg-surface border-2 border-gold/40 text-gold flex items-center justify-center text-base hover:scale-110 transition-all shadow">
+                    ⭐
+                  </button>
+                  <button onclick="handleUserSwipe('like')" class="w-12 h-12 rounded-full bg-gradient-to-r from-ruby to-purple text-white flex items-center justify-center text-xl hover:scale-105 transition-all glow-ruby active:scale-90 shadow">
+                    ❤️
+                  </button>
+                </div>
+              </div>
+
+              <!-- RADAR GRID VIEW -->
+              <div id="u-radar-grid-view" class="hidden grid grid-cols-2 gap-2"></div>
+
+            </div>
+
+            <!-- SUB-TAB 2: CHATS & MATCHES -->
+            <div id="u-screen-chats" class="hidden space-y-3">
+              <div class="space-y-1">
+                <span class="text-[10px] font-bold text-muted uppercase tracking-wider">NOVOS MATCHES (3)</span>
+                <div class="flex gap-2 overflow-x-auto pb-1">
+                  <div onclick="selectUserChat('Marcos & Juliana', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80')" class="flex-shrink-0 text-center cursor-pointer space-y-1">
+                    <div class="w-12 h-12 rounded-full p-0.5 bg-gradient-to-tr from-ruby to-purple">
+                      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover rounded-full">
+                    </div>
+                    <span class="text-[9px] text-white font-medium block truncate w-12">Marcos & Ju</span>
+                  </div>
+
+                  <div onclick="selectUserChat('Isabela S.', 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80')" class="flex-shrink-0 text-center cursor-pointer space-y-1">
+                    <div class="w-12 h-12 rounded-full p-0.5 bg-gradient-to-tr from-gold to-ruby">
+                      <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover rounded-full">
+                    </div>
+                    <span class="text-[9px] text-white font-medium block truncate w-12">Isabela</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-surface rounded-2xl border border-purple/30 overflow-hidden flex flex-col h-[380px]">
+                <div class="bg-elevated p-2.5 border-b border-subtle/30 flex justify-between items-center text-xs">
+                  <div class="flex items-center gap-2">
+                    <img id="u-active-chat-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" class="w-8 h-8 rounded-full object-cover border border-ruby">
+                    <div>
+                      <h4 id="u-active-chat-name" class="font-bold text-white text-[11px]">Marcos & Juliana</h4>
+                      <p class="text-[9px] text-emerald-400">🔒 Chat E2EE Ativo • Anti-Print</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="u-chat-feed" class="flex-1 p-3 overflow-y-auto space-y-2 text-[11px]">
+                  <div class="text-center my-1">
+                    <span class="bg-elevated text-subtle px-2.5 py-0.5 rounded-full text-[9px]">Chaves de criptografia trocadas via Signal Protocol</span>
+                  </div>
+
+                  <div class="flex flex-col items-start">
+                    <div class="bg-elevated p-2.5 rounded-2xl rounded-tl-none max-w-[80%] text-slate-200 border border-subtle/20">
+                      Olá! Adoramos o perfil de vocês. Estão livres neste fim de semana? 😊
+                    </div>
+                    <span class="text-[8px] text-muted mt-0.5 pl-1">21:30</span>
+                  </div>
+
+                  <div class="flex flex-col items-end">
+                    <div class="bg-ruby p-2.5 rounded-2xl rounded-tr-none max-w-[80%] text-white font-medium shadow">
+                      Olá! Com certeza. Estávamos procurando um bom vinho e papo sem pressa!
+                    </div>
+                    <span class="text-[8px] text-muted mt-0.5 pr-1">21:32 • Lida</span>
+                  </div>
+                </div>
+
+                <div class="p-2 bg-elevated border-t border-subtle/30 flex items-center gap-1.5">
+                  <input type="text" id="u-chat-input" placeholder="Mensagem criptografada..." onkeypress="if(event.key==='Enter') sendUserMessage()" class="flex-1 bg-surface border border-subtle/40 rounded-xl px-3 py-1.5 text-[11px] text-white focus:outline-none focus:border-ruby">
+                  <button onclick="sendUserMessage()" class="bg-ruby text-white px-3 py-1.5 rounded-xl text-[11px] font-bold shadow glow-ruby">
+                    Enviar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- SUB-TAB 3: PERFIL & COFRE -->
+            <div id="u-screen-profile" class="hidden space-y-3">
+              <div class="bg-surface p-3 rounded-2xl border border-purple/30 space-y-3">
+                <div class="flex items-center gap-3">
+                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80" class="w-16 h-16 rounded-2xl object-cover border-2 border-ruby">
+                  <div>
+                    <div class="flex items-center gap-1.5">
+                      <h3 class="font-bold text-white text-sm">Gabriel & Vanessa</h3>
+                      <span class="bg-ruby/20 text-ruby text-[9px] px-1.5 py-0.5 rounded font-extrabold">VIP CLUB</span>
+                    </div>
+                    <p class="text-[10px] text-muted">São Paulo, SP • Verificados via Liveness 3D</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SUB-TAB 4: NOTIFICAÇÕES -->
+            <div id="u-screen-notifications" class="hidden space-y-2 text-xs">
+              <span class="font-bold text-white text-[11px] block border-b border-subtle/20 pb-1">🔔 Notificações Recentes</span>
+              <div class="p-2.5 bg-surface rounded-xl border border-ruby/30 flex items-start gap-2">
+                <div class="text-base">🔥</div>
+                <div>
+                  <h4 class="font-bold text-white text-[11px]">Novo Match com Marcos & Juliana!</h4>
+                  <p class="text-[10px] text-muted">Ambos demonstraram interesse bilateral.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- SUB-TAB 5: CONFIGURAÇÕES -->
+            <div id="u-screen-settings" class="hidden space-y-3 text-xs">
+              <span class="font-bold text-white text-[11px] block border-b border-subtle/20 pb-1">⚙️ Suíte de Discrição</span>
+              <div class="p-2.5 bg-surface rounded-xl border border-subtle/30 flex items-center justify-between">
+                <div>
+                  <h4 class="font-bold text-white text-[11px]">Modo Fantasma (Invisível)</h4>
+                  <p class="text-[9px] text-muted">Oculta seu perfil no radar para quem não curtiu.</p>
+                </div>
+                <button onclick="toggleGhostMode()" class="bg-ruby text-white text-[10px] px-2 py-1 rounded font-bold">Alternar</button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- BOTTOM APP NAVIGATION BAR -->
+          <div class="bg-surface/95 border-t border-purple/20 px-3 py-2 flex justify-around items-center text-[10px] text-muted z-20 backdrop-blur">
+            <button onclick="switchUserSubTab('discovery')" id="u-nav-discovery" class="flex flex-col items-center gap-0.5 text-ruby font-bold">
+              <span class="text-sm">🔥</span>
+              <span>Descoberta</span>
+            </button>
+            <button onclick="switchUserSubTab('chats')" id="u-nav-chats" class="flex flex-col items-center gap-0.5 hover:text-white">
+              <span class="text-sm">💬</span>
+              <span>Chats</span>
+            </button>
+            <button onclick="switchUserSubTab('profile')" id="u-nav-profile" class="flex flex-col items-center gap-0.5 hover:text-white">
+              <span class="text-sm">👤</span>
+              <span>Perfil</span>
+            </button>
+            <button onclick="switchUserSubTab('settings')" id="u-nav-settings" class="flex flex-col items-center gap-0.5 hover:text-white">
+              <span class="text-sm">⚙️</span>
+              <span>Discrição</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- TAB 2: ARQUITETURA -->
+    <section id="view-arch" class="space-y-6 hidden">
+      <div class="bg-gradient-to-r from-surface via-elevated to-surface p-6 rounded-2xl border border-purple/30">
+        <h2 class="text-2xl font-extrabold text-white">Visão Geral da Arquitetura do Sistema</h2>
+        <p class="text-muted text-sm mt-1">Infraestrutura desacoplada orientada a eventos, com Next.js, React Native, NestJS e PostgreSQL PostGIS/pgvector.</p>
+      </div>
+
+      <div class="bg-surface p-5 rounded-2xl border border-purple/20 space-y-4">
+        <h3 class="font-bold text-white text-base">📊 Latência do Pipeline do Sistema (ms)</h3>
+        <div class="chart-container">
+          <canvas id="archLatencyChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: SEGURANÇA & ANTI-FAKE 3D -->
+    <section id="view-security" class="space-y-6 hidden">
+      <div class="bg-gradient-to-r from-surface via-elevated to-surface p-6 rounded-2xl border border-ruby/30">
+        <h2 class="text-2xl font-extrabold text-white">Pipeline Biométrico Anti-Fake 3D</h2>
+        <p class="text-muted text-sm mt-1">Simulação do desafio de presencialidade física (Liveness Detection).</p>
+      </div>
+
+      <div class="bg-surface p-6 rounded-2xl border border-ruby/30 space-y-4 max-w-xl mx-auto text-center">
+        <span id="liveness-badge" class="bg-gold/20 text-gold text-xs px-3 py-1 rounded-full font-bold">Aguardando Início</span>
+        <div class="w-full aspect-video bg-black rounded-xl border border-subtle/40 flex items-center justify-center p-4">
+          <div id="challenge-box" class="text-white text-xs font-semibold">Clique em "Iniciar Desafio" abaixo.</div>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="startLivenessSimulation()" class="flex-1 bg-ruby text-white py-2 rounded-xl font-bold text-xs shadow glow-ruby">▶️ Iniciar Desafio Biométrico</button>
+          <button onclick="resetLivenessSimulation()" class="bg-elevated text-muted px-4 py-2 rounded-xl text-xs border border-subtle/30">Resetar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: ALGORITMO MATCH -->
+    <section id="view-match" class="space-y-6 hidden">
+      <div class="bg-gradient-to-r from-surface via-elevated to-surface p-6 rounded-2xl border border-purple/30">
+        <h2 class="text-2xl font-extrabold text-white">Calculadora de Compatibility Score</h2>
+        <p class="text-muted text-sm mt-1">Ponderação de geolocalização PostGIS, intenção e trust score.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-surface p-5 rounded-2xl border border-subtle/30 space-y-4">
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs text-muted"><span>Distância (km)</span><span id="val-dist" class="text-white font-bold">12 km</span></div>
+            <input type="range" id="slider-dist" min="1" max="100" value="12" oninput="updateMatchScoreSimulator()" class="w-full accent-ruby bg-elevated h-2 rounded-lg cursor-pointer">
+          </div>
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs text-muted"><span>Interseção Intenções</span><span id="val-intent" class="text-white font-bold">80%</span></div>
+            <input type="range" id="slider-intent" min="0" max="100" value="80" oninput="updateMatchScoreSimulator()" class="w-full accent-purple bg-elevated h-2 rounded-lg cursor-pointer">
+          </div>
+        </div>
+
+        <div class="bg-surface p-5 rounded-2xl border border-purple/30 text-center space-y-4">
+          <div id="final-match-score" class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-ruby to-purple">87%</div>
+          <div class="chart-container">
+            <canvas id="matchRadarChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: PAINEL ADMIN -->
+    <section id="view-admin" class="space-y-6 hidden">
+      <div class="bg-gradient-to-r from-surface via-elevated to-surface p-6 rounded-2xl border border-gold/30">
+        <h2 class="text-2xl font-extrabold text-white">Painel de Moderação & Trilha de Auditoria</h2>
+        <p class="text-muted text-sm mt-1">Auditoria de denúncias, análise de chats e registros imutáveis.</p>
+      </div>
+
+      <div class="bg-surface p-5 rounded-2xl border border-subtle/30 space-y-4">
+        <h3 class="font-bold text-white text-base">📈 Categorias de Moderação</h3>
+        <div class="chart-container">
+          <canvas id="adminModerationChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 6: 100 PERFIS DEMO -->
+    <section id="view-seed" class="space-y-6 hidden">
+      <div class="bg-gradient-to-r from-surface via-elevated to-surface p-6 rounded-2xl border border-gold/30">
+        <h2 class="text-2xl font-extrabold text-white">Base de Dados Sintética (100 Perfis Seed)</h2>
+      </div>
+      <div id="seed-profiles-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
+    </section>
+
+    <!-- TAB 7: POSTGRESQL DDL -->
+    <section id="view-schema" class="space-y-6 hidden">
+      <div class="bg-gradient-to-r from-surface via-elevated to-surface p-6 rounded-2xl border border-purple/30">
+        <h2 class="text-2xl font-extrabold text-white">Schema PostgreSQL & PostGIS DDL</h2>
+      </div>
+      <div class="bg-surface rounded-2xl p-4 border border-purple/30 font-mono text-xs text-slate-300">
+        <pre>
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "postgis";
+CREATE EXTENSION IF NOT EXISTS "vector";
+
+CREATE TABLE admin_audit_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    admin_id UUID NOT NULL,
+    action_type VARCHAR(50) NOT NULL,
+    target_resource_id UUID NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+        </pre>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    let allDemoProfiles = [];
+    let currentSwipeIndex = 0;
+    let isGhostModeActive = true;
+
+    let archChartInstance = null;
+    let matchRadarInstance = null;
+    let adminModerationChartInstance = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      generate100DemoProfiles();
+      initArchitectureChart();
+      initMatchRadarChart();
+      initAdminModerationChart();
+      renderSeedProfiles();
+      updateMatchScoreSimulator();
+    });
+
+    function switchTab(tabId) {
+      const tabs = ['user-layout', 'arch', 'security', 'match', 'admin', 'seed', 'schema'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-${t}`);
+        const view = document.getElementById(`view-${t}`);
+        if (t === tabId) {
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-extrabold bg-ruby text-white shadow";
+          view.classList.remove('hidden');
+        } else {
+          btn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-muted hover:text-white";
+          view.classList.add('hidden');
+        }
+      });
+    }
+
+    function switchUserSubTab(subTabId) {
+      const subTabs = ['discovery', 'chats', 'profile', 'notifications', 'settings'];
+      subTabs.forEach(st => {
+        const screen = document.getElementById(`u-screen-${st}`);
+        const navBtn = document.getElementById(`u-nav-${st}`);
+        if (st === subTabId) {
+          screen.classList.remove('hidden');
+          if (navBtn) navBtn.className = "flex flex-col items-center gap-0.5 text-ruby font-bold";
+        } else {
+          screen.classList.add('hidden');
+          if (navBtn) navBtn.className = "flex flex-col items-center gap-0.5 text-muted hover:text-white";
+        }
+      });
+    }
+
+    function setUserDisplayMode(mode) {
+      const container = document.getElementById('phone-container');
+      if (mode === 'desktop') {
+        container.style.maxWidth = '1000px';
+        container.style.height = '780px';
+      } else {
+        container.style.maxWidth = '380px';
+        container.style.height = '720px';
+      }
+    }
+
+    function toggleGhostMode() {
+      isGhostModeActive = !isGhostModeActive;
+      const badge = document.getElementById('ghost-toggle-badge');
+      badge.innerText = isGhostModeActive ? "👻 On-line" : "🕶️ Invisível";
+    }
+
+    function setDiscoveryViewMode(view) {
+      const swipeView = document.getElementById('u-swipe-card-view');
+      const radarView = document.getElementById('u-radar-grid-view');
+      if (view === 'grid') {
+        swipeView.classList.add('hidden');
+        radarView.classList.remove('hidden');
+        radarView.innerHTML = allDemoProfiles.slice(0, 4).map(p => `
+          <div class="bg-surface rounded-xl p-1 border border-subtle/30 text-center">
+            <img src="${p.avatar}" class="w-full h-24 object-cover rounded-lg">
+            <span class="text-[10px] text-white font-bold block mt-1">${p.name}</span>
+          </div>
+        `).join('');
+      } else {
+        swipeView.classList.remove('hidden');
+        radarView.classList.add('hidden');
+      }
+    }
+
+    function handleUserSwipe(action) {
+      currentSwipeIndex = (currentSwipeIndex + 1) % allDemoProfiles.length;
+      const profile = allDemoProfiles[currentSwipeIndex];
+      document.getElementById('u-card-img').src = profile.avatar;
+      document.getElementById('u-card-name').innerText = profile.name;
+    }
+
+    function selectUserChat(name, avatar) {
+      document.getElementById('u-active-chat-name').innerText = name;
+      document.getElementById('u-active-chat-avatar').src = avatar;
+      switchUserSubTab('chats');
+    }
+
+    function sendUserMessage() {
+      const input = document.getElementById('u-chat-input');
+      if (!input.value.trim()) return;
+      const feed = document.getElementById('u-chat-feed');
+      feed.insertAdjacentHTML('beforeend', `<div class="flex flex-col items-end"><div class="bg-ruby p-2 rounded-2xl text-white">${input.value}</div></div>`);
+      input.value = '';
+    }
+
+    function initArchitectureChart() {
+      const ctx = document.getElementById('archLatencyChart');
+      if (!ctx) return;
+      archChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Auth JWT', 'Geo H3', 'Match Vector', '3D Liveness'],
+          datasets: [{ data: [15, 32, 45, 480], backgroundColor: '#7928CA' }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    function initMatchRadarChart() {
+      const ctx = document.getElementById('matchRadarChart');
+      if (!ctx) return;
+      matchRadarInstance = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['Proximidade', 'Intenções', 'Tags', 'Trust Score'],
+          datasets: [{ data: [88, 80, 65, 95], backgroundColor: 'rgba(229, 9, 76, 0.3)', borderColor: '#E5094C' }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    function initAdminModerationChart() {
+      const ctx = document.getElementById('adminModerationChart');
+      if (!ctx) return;
+      adminModerationChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Fakes', 'Ofensas', 'Spam'],
+          datasets: [{ data: [42, 35, 23], backgroundColor: ['#E5094C', '#7928CA', '#FFB800'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    function updateMatchScoreSimulator() {
+      const dist = parseInt(document.getElementById('slider-dist').value);
+      const intent = parseInt(document.getElementById('slider-intent').value);
+      document.getElementById('val-dist').innerText = `${dist} km`;
+      document.getElementById('val-intent').innerText = `${intent}%`;
+    }
+
+    function startLivenessSimulation() {
+      document.getElementById('liveness-badge').innerText = "Verificado!";
+      document.getElementById('challenge-box').innerText = "Análise 3D concluída com sucesso!";
+    }
+
+    function resetLivenessSimulation() {
+      document.getElementById('liveness-badge').innerText = "Aguardando Início";
+      document.getElementById('challenge-box').innerText = "Clique em 'Iniciar Desafio'";
+    }
+
+    function generate100DemoProfiles() {
+      for (let i = 1; i <= 100; i++) {
+        allDemoProfiles.push({
+          id: i,
+          name: `Perfil Demo #${i}`,
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80'
+        });
+      }
+    }
+
+    function renderSeedProfiles() {
+      const grid = document.getElementById('seed-profiles-grid');
+      if (!grid) return;
+      grid.innerHTML = allDemoProfiles.slice(0, 8).map(p => `
+        <div class="bg-surface p-2 rounded-xl border border-subtle/30 text-center">
+          <img src="${p.avatar}" class="w-full h-28 object-cover rounded-lg">
+          <span class="text-xs text-white font-bold block mt-1">${p.name}</span>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>
